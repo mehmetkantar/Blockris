@@ -4,8 +4,6 @@ export type ScreenType = 'start' | 'game' | 'leaderboard' | 'shop';
 
 export interface UserData {
   username: string;
-  country: string; // ISO country code
-  shareLocation: boolean;
   weeklyCoins: number;
   monthlyCoins: number;
   highScore: number;
@@ -22,7 +20,6 @@ export interface UserSettings {
 export interface LeaderboardEntry {
   rank: number;
   username: string;
-  country: string;
   score: number;
   timestamp: string;
 }
@@ -45,9 +42,7 @@ export interface ShopItem {
 }
 
 export const DEFAULT_USER_DATA: UserData = {
-  username: 'Player',
-  country: 'TR', // Default Turkey
-  shareLocation: false,
+  username: '',
   weeklyCoins: 100, // Starting coins
   monthlyCoins: 50,
   highScore: 0,
