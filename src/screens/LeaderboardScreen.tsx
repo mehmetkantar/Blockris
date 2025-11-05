@@ -9,12 +9,30 @@ interface LeaderboardScreenProps {
 
 function LeaderboardScreen({ userData, onBack }: LeaderboardScreenProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [userRank, setUserRank] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLeaderboard(leaderboardManager.getGlobalLeaderboard(100));
-  }, []);
+    const loadLeaderboard = async () => {
+      try {
+        const data = await leaderboardManager.getGlobalLeaderboard(100);
+        setLeaderboard(data);
 
-  const userRank = leaderboardManager.getUserRank(userData.username);
+        const rank = await leaderboardManager.getUserRank(userData.username);
+        setUserRank(rank);
+      } catch (error) {
+        console.error('Error loading leaderboard:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadLeaderboard();
+
+    // Refresh leaderboard every 10 seconds
+    const interval = setInterval(loadLeaderboard, 10000);
+    return () => clearInterval(interval);
+  }, [userData.username]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-purple-800 flex flex-col p-4">
@@ -49,7 +67,12 @@ function LeaderboardScreen({ userData, onBack }: LeaderboardScreenProps) {
       {/* Leaderboard List */}
       <div className="bg-white/10 backdrop-blur-md rounded-2xl border-2 border-white/20 overflow-hidden flex-1">
         <div className="max-h-full overflow-y-auto">
-          {leaderboard.length === 0 ? (
+          {loading ? (
+            <div className="text-center text-white/70 py-12">
+              <div className="text-4xl mb-2 animate-bounce">🔄</div>
+              <div>Yükleniyor...</div>
+            </div>
+          ) : leaderboard.length === 0 ? (
             <div className="text-center text-white/70 py-12">
               <div className="text-4xl mb-2">🏁</div>
               <div>Henüz skor yok</div>

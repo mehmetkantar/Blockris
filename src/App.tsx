@@ -28,12 +28,12 @@ function App() {
     setCurrentScreen('game');
   };
 
-  const handleGameOver = (finalScore: number) => {
+  const handleGameOver = async (finalScore: number) => {
     // Update high score
     const isNewHigh = storageManager.updateHighScore(finalScore);
 
-    // Submit to leaderboard
-    leaderboardManager.submitScore(
+    // Submit to leaderboard (Firebase + localStorage)
+    await leaderboardManager.submitScore(
       userData.username,
       finalScore
     );
