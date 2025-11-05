@@ -9,6 +9,7 @@ import { GameState } from '../types/game';
 import { UserData } from '../types/user';
 import { createEmptyGrid, canPlaceAnyPiece, isGridEmpty } from '../game/gameEngine';
 import { generatePieceSet, rotatePiece } from '../game/pieces';
+import { generateSmartPieceSet } from '../game/smartPieceGenerator';
 import { FULL_CLEAR_BONUS } from '../game/scoreSystem';
 import { soundManager } from '../utils/sounds';
 import { hapticsManager } from '../utils/haptics';
@@ -42,6 +43,7 @@ function GameScreen({ userData, savedGameState, onGameOver, onExitGame }: GameSc
       sourceIndex: null,
     },
     isMuted: !userData.settings.soundEnabled,
+    lastNotification: null,
   });
 
   const [paletteIndex, setPaletteIndex] = useState(0);
@@ -104,9 +106,41 @@ function GameScreen({ userData, savedGameState, onGameOver, onExitGame }: GameSc
             }
           }
 
+          // Generate smart piece set
+          const { pieces, uniqueSolution } = generateSmartPieceSet(
+            prev.grid,
+            prev.rotateSlot,
+            prev.score
+          );
+
+          // If unique solution, show notification and add bonus
+          if (uniqueSolution) {
+            setTimeout(() => {
+              setGameState((current) => ({
+                ...current,
+                score: current.score + 100,
+                lastNotification: {
+                  message: '🎯 Tek Çözüm! +100 Bonus',
+                  color: '#fbbf24',
+                  show: true,
+                },
+              }));
+
+              hapticsManager.medium();
+
+              // Hide notification after 3 seconds
+              setTimeout(() => {
+                setGameState((current) => ({
+                  ...current,
+                  lastNotification: null,
+                }));
+              }, 3000);
+            }, 100);
+          }
+
           return {
             ...prev,
-            currentPieces: generatePieceSet(),
+            currentPieces: pieces,
             rotateSlot: null, // Clear rotate slot on new round
             completedRounds: prev.completedRounds + 1,
             currentRoundHadClear: false, // Reset for new round
@@ -308,6 +342,20 @@ function GameScreen({ userData, savedGameState, onGameOver, onExitGame }: GameSc
           onDragEnd={() => setCurrentDragInfo(null)}
         />
       </div>
+
+      {/* Unique Solution Notification */}
+      {gameState.lastNotification && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 rounded-2xl shadow-2xl animate-bounce">
+            <span
+              className="text-3xl font-bold"
+              style={{ color: gameState.lastNotification.color }}
+            >
+              {gameState.lastNotification.message}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Game Over Modal */}
       {gameState.isGameOver && (

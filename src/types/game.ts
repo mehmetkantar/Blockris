@@ -44,6 +44,11 @@ export interface GameState {
   isGameOver: boolean;
   dragState: DragState;
   isMuted: boolean;
+  lastNotification: {
+    message: string;
+    color: string;
+    show: boolean;
+  } | null;
 }
 
 export interface PlacementResult {
