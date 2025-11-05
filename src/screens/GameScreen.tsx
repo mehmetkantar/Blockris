@@ -31,6 +31,7 @@ function GameScreen({ userData, savedGameState, onGameOver, onExitGame }: GameSc
     combo: 0,
     completedRounds: 0,
     currentRoundHadClear: false,
+    roundsSinceLastClear: 0,
     isGameOver: false,
     dragState: {
       isDragging: false,
@@ -94,15 +95,23 @@ function GameScreen({ userData, savedGameState, onGameOver, onExitGame }: GameSc
         // Handle round completion and combo logic
         setGameState((prev) => {
           let newCombo = prev.combo;
+          let newRoundsSinceLastClear = prev.roundsSinceLastClear;
 
           // Apply combo logic after 2nd round
           if (prev.completedRounds >= 2) {
             if (prev.currentRoundHadClear) {
-              // Continue combo - it will be incremented on next clear
-              newCombo = prev.combo;
+              // This round had clear - reset grace period counter
+              newRoundsSinceLastClear = 0;
+              newCombo = prev.combo; // Combo continues
             } else {
-              // No clears this round - reset combo
-              newCombo = 0;
+              // No clears this round - increment grace period counter
+              newRoundsSinceLastClear++;
+
+              // If 2 or more rounds without clear, reset combo
+              if (newRoundsSinceLastClear >= 2) {
+                newCombo = 0;
+              }
+              // Otherwise combo continues (1 round grace period)
             }
           }
 
@@ -144,6 +153,7 @@ function GameScreen({ userData, savedGameState, onGameOver, onExitGame }: GameSc
             rotateSlot: null, // Clear rotate slot on new round
             completedRounds: prev.completedRounds + 1,
             currentRoundHadClear: false, // Reset for new round
+            roundsSinceLastClear: newRoundsSinceLastClear,
             combo: newCombo,
           };
         });
