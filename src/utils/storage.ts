@@ -116,14 +116,6 @@ class StorageManager {
     this.saveUserData(userData);
   }
 
-  // Update country
-  updateCountry(country: string, shareLocation: boolean = false): void {
-    const userData = this.loadUserData();
-    userData.country = country;
-    userData.shareLocation = shareLocation;
-    this.saveUserData(userData);
-  }
-
   // Update username
   updateUsername(username: string): void {
     const userData = this.loadUserData();

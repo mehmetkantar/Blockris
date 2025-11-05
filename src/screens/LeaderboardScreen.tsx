@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { LeaderboardEntry, UserData } from '../types/user';
-import { leaderboardManager, COUNTRIES } from '../utils/leaderboard';
+import { leaderboardManager } from '../utils/leaderboard';
 
 interface LeaderboardScreenProps {
   userData: UserData;
@@ -8,24 +8,18 @@ interface LeaderboardScreenProps {
 }
 
 function LeaderboardScreen({ userData, onBack }: LeaderboardScreenProps) {
-  const [tab, setTab] = useState<'global' | 'country'>('global');
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
 
   useEffect(() => {
-    if (tab === 'global') {
-      setLeaderboard(leaderboardManager.getGlobalLeaderboard(100));
-    } else {
-      setLeaderboard(leaderboardManager.getCountryLeaderboard(userData.country, 100));
-    }
-  }, [tab, userData.country]);
+    setLeaderboard(leaderboardManager.getGlobalLeaderboard(100));
+  }, []);
 
-  const selectedCountry = COUNTRIES.find(c => c.code === userData.country);
-  const userRank = leaderboardManager.getUserRank(userData.username, userData.country);
+  const userRank = leaderboardManager.getUserRank(userData.username);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-purple-800 flex flex-col p-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <button
           onClick={onBack}
           className="bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-lg font-medium hover:bg-white/30 transition-all"
@@ -36,31 +30,6 @@ function LeaderboardScreen({ userData, onBack }: LeaderboardScreenProps) {
         <div className="w-20"></div> {/* Spacer */}
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-4">
-        <button
-          onClick={() => setTab('global')}
-          className={`flex-1 py-3 px-4 rounded-xl font-bold transition-all ${
-            tab === 'global'
-              ? 'bg-white text-purple-600 shadow-lg'
-              : 'bg-white/20 text-white hover:bg-white/30'
-          }`}
-        >
-          🌍 Genel
-        </button>
-        <button
-          onClick={() => setTab('country')}
-          className={`flex-1 py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
-            tab === 'country'
-              ? 'bg-white text-purple-600 shadow-lg'
-              : 'bg-white/20 text-white hover:bg-white/30'
-          }`}
-        >
-          <span className="text-xl">{selectedCountry?.flag}</span>
-          {selectedCountry?.name}
-        </button>
-      </div>
-
       {/* User's Rank Card */}
       {userRank > 0 && (
         <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-4 mb-4 shadow-lg">
@@ -69,7 +38,7 @@ function LeaderboardScreen({ userData, onBack }: LeaderboardScreenProps) {
               <div className="text-3xl font-bold">#{userRank}</div>
               <div>
                 <div className="font-bold">{userData.username}</div>
-                <div className="text-sm text-white/80">{tab === 'country' ? 'Ülke Sıralaması' : 'Global Sıralama'}</div>
+                <div className="text-sm text-white/80">Sıralamanız</div>
               </div>
             </div>
             <div className="text-2xl font-bold">{userData.highScore.toLocaleString()}</div>
@@ -91,8 +60,8 @@ function LeaderboardScreen({ userData, onBack }: LeaderboardScreenProps) {
                 <div
                   key={`${entry.username}-${entry.timestamp}`}
                   className={`flex items-center justify-between p-4 ${
-                    entry.username === userData.username && entry.country === userData.country
-                      ? 'bg-white/20'
+                    entry.username === userData.username
+                      ? 'bg-cyan-500/30 border-l-4 border-cyan-400'
                       : 'hover:bg-white/5'
                   } transition-colors`}
                 >
@@ -109,11 +78,7 @@ function LeaderboardScreen({ userData, onBack }: LeaderboardScreenProps) {
 
                     {/* User Info */}
                     <div className="flex-1">
-                      <div className="text-white font-bold">{entry.username}</div>
-                      <div className="text-white/60 text-sm flex items-center gap-1">
-                        <span>{COUNTRIES.find(c => c.code === entry.country)?.flag}</span>
-                        <span>{COUNTRIES.find(c => c.code === entry.country)?.name}</span>
-                      </div>
+                      <div className="text-white font-bold text-lg">{entry.username}</div>
                     </div>
 
                     {/* Score */}

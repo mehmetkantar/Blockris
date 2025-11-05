@@ -13,6 +13,8 @@ function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('start');
   const [userData, setUserData] = useState<UserData>(storageManager.loadUserData());
   const [savedGameState, setSavedGameState] = useState(storageManager.loadGameState());
+  const [showUsernameModal, setShowUsernameModal] = useState(!userData.username);
+  const [usernameInput, setUsernameInput] = useState('');
 
   useEffect(() => {
     soundManager.init();
@@ -33,7 +35,6 @@ function App() {
     // Submit to leaderboard
     leaderboardManager.submitScore(
       userData.username,
-      userData.country,
       finalScore
     );
 
@@ -69,9 +70,16 @@ function App() {
     hapticsManager.setEnabled(!!settings.hapticsEnabled);
   };
 
-  const handleUpdateCountry = (country: string) => {
-    storageManager.updateCountry(country);
+  const handleUpdateUsername = (username: string) => {
+    storageManager.updateUsername(username);
     setUserData(storageManager.loadUserData());
+  };
+
+  const handleUsernameModalSubmit = () => {
+    if (usernameInput.trim()) {
+      handleUpdateUsername(usernameInput.trim());
+      setShowUsernameModal(false);
+    }
   };
 
   const handlePurchase = () => {
@@ -88,7 +96,7 @@ function App() {
           onOpenLeaderboard={() => setCurrentScreen('leaderboard')}
           onOpenShop={() => setCurrentScreen('shop')}
           onUpdateSettings={handleUpdateSettings}
-          onUpdateCountry={handleUpdateCountry}
+          onUpdateUsername={handleUpdateUsername}
         />
       )}
 
@@ -114,6 +122,38 @@ function App() {
           onBack={() => setCurrentScreen('start')}
           onPurchase={handlePurchase}
         />
+      )}
+
+      {/* Username Modal - First Launch */}
+      {showUsernameModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl border-4 border-white/20">
+            <h2 className="text-4xl font-bold text-white mb-2">🎮 Hoş Geldin!</h2>
+            <p className="text-white/90 mb-6 text-lg">Oyuna başlamadan önce bir kullanıcı adı seç</p>
+
+            <div className="mb-6">
+              <input
+                type="text"
+                value={usernameInput}
+                onChange={(e) => setUsernameInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleUsernameModalSubmit()}
+                maxLength={15}
+                placeholder="Kullanıcı adınız..."
+                autoFocus
+                className="w-full px-4 py-3 rounded-xl bg-white/90 text-purple-900 placeholder-purple-400 text-lg font-medium border-2 border-white/50 focus:border-yellow-400 outline-none"
+              />
+              <p className="text-white/70 text-sm mt-2">Maksimum 15 karakter</p>
+            </div>
+
+            <button
+              onClick={handleUsernameModalSubmit}
+              disabled={!usernameInput.trim()}
+              className="w-full bg-gradient-to-r from-green-400 to-emerald-500 text-white font-bold py-4 px-6 rounded-xl text-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            >
+              Başla! 🚀
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

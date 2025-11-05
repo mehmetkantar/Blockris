@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { UserData } from '../types/user';
 import { storageManager } from '../utils/storage';
-import { COUNTRIES } from '../utils/leaderboard';
 
 interface StartScreenProps {
   userData: UserData;
@@ -9,7 +8,7 @@ interface StartScreenProps {
   onOpenLeaderboard: () => void;
   onOpenShop: () => void;
   onUpdateSettings: (settings: Partial<UserData['settings']>) => void;
-  onUpdateCountry: (country: string) => void;
+  onUpdateUsername: (username: string) => void;
 }
 
 function StartScreen({
@@ -18,13 +17,13 @@ function StartScreen({
   onOpenLeaderboard,
   onOpenShop,
   onUpdateSettings,
-  onUpdateCountry,
+  onUpdateUsername,
 }: StartScreenProps) {
   const [showSettings, setShowSettings] = useState(false);
-  const [showCountrySelect, setShowCountrySelect] = useState(false);
   const [showDailyReward, setShowDailyReward] = useState(false);
   const [dailyReward, setDailyReward] = useState<{ weeklyCoins: number; monthlyCoins: number } | null>(null);
   const [consecutiveDays, setConsecutiveDays] = useState(0);
+  const [usernameInput, setUsernameInput] = useState(userData.username);
 
   // Check for daily login reward on mount
   useEffect(() => {
@@ -36,7 +35,11 @@ function StartScreen({
     }
   }, []);
 
-  const selectedCountry = COUNTRIES.find(c => c.code === userData.country) || COUNTRIES[0];
+  const handleUsernameSubmit = () => {
+    if (usernameInput.trim()) {
+      onUpdateUsername(usernameInput.trim());
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-purple-800 flex items-center justify-center p-4">
@@ -95,77 +98,66 @@ function StartScreen({
           </button>
         </div>
 
-        {/* Bottom Row - Settings & Country */}
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="flex-1 bg-white/20 backdrop-blur-md text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:bg-white/30 transition-all"
-          >
-            ⚙️ Ayarlar
-          </button>
-
-          <button
-            onClick={() => setShowCountrySelect(!showCountrySelect)}
-            className="flex-1 bg-white/20 backdrop-blur-md text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:bg-white/30 transition-all flex items-center justify-center gap-2"
-          >
-            <span className="text-2xl">{selectedCountry.flag}</span>
-            <span>{selectedCountry.code}</span>
-          </button>
-        </div>
+        {/* Settings Button */}
+        <button
+          onClick={() => setShowSettings(!showSettings)}
+          className="w-full bg-white/20 backdrop-blur-md text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:bg-white/30 transition-all"
+        >
+          ⚙️ Ayarlar
+        </button>
 
         {/* Settings Panel */}
         {showSettings && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border-2 border-white/20 space-y-3 animate-in slide-in-from-top">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border-2 border-white/20 space-y-4 animate-in slide-in-from-top">
             <h3 className="text-white font-bold text-lg mb-3">Ayarlar</h3>
 
-            <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-white font-medium">🔊 Ses</span>
-              <input
-                type="checkbox"
-                checked={userData.settings.soundEnabled}
-                onChange={(e) => onUpdateSettings({ soundEnabled: e.target.checked })}
-                className="w-12 h-6 rounded-full appearance-none bg-white/30 checked:bg-green-500 relative cursor-pointer transition-colors
-                         before:content-[''] before:absolute before:w-5 before:h-5 before:rounded-full before:bg-white before:top-0.5 before:left-0.5
-                         before:transition-transform checked:before:translate-x-6"
-              />
-            </label>
-
-            <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-white font-medium">📳 Titreşim</span>
-              <input
-                type="checkbox"
-                checked={userData.settings.hapticsEnabled}
-                onChange={(e) => onUpdateSettings({ hapticsEnabled: e.target.checked })}
-                className="w-12 h-6 rounded-full appearance-none bg-white/30 checked:bg-green-500 relative cursor-pointer transition-colors
-                         before:content-[''] before:absolute before:w-5 before:h-5 before:rounded-full before:bg-white before:top-0.5 before:left-0.5
-                         before:transition-transform checked:before:translate-x-6"
-              />
-            </label>
-          </div>
-        )}
-
-        {/* Country Selection */}
-        {showCountrySelect && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border-2 border-white/20 max-h-64 overflow-y-auto animate-in slide-in-from-top">
-            <h3 className="text-white font-bold text-lg mb-3 sticky top-0 bg-purple-600/50 backdrop-blur-sm py-2">Ülke Seçin</h3>
+            {/* Username Edit */}
             <div className="space-y-2">
-              {COUNTRIES.map((country) => (
+              <label className="text-white font-medium text-sm">👤 Kullanıcı Adı</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={usernameInput}
+                  onChange={(e) => setUsernameInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleUsernameSubmit()}
+                  maxLength={15}
+                  placeholder="Adınızı girin..."
+                  className="flex-1 px-3 py-2 rounded-lg bg-white/20 text-white placeholder-white/50 border-2 border-white/30 focus:border-white/60 outline-none"
+                />
                 <button
-                  key={country.code}
-                  onClick={() => {
-                    onUpdateCountry(country.code);
-                    setShowCountrySelect(false);
-                  }}
-                  className={`w-full text-left px-4 py-2 rounded-lg transition-all ${
-                    country.code === userData.country
-                      ? 'bg-white/30 text-white font-bold'
-                      : 'bg-white/10 text-white/80 hover:bg-white/20'
-                  }`}
+                  onClick={handleUsernameSubmit}
+                  disabled={!usernameInput.trim() || usernameInput.trim() === userData.username}
+                  className="px-4 py-2 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition-colors disabled:bg-white/20 disabled:cursor-not-allowed"
                 >
-                  <span className="text-2xl mr-3">{country.flag}</span>
-                  {country.name}
+                  Kaydet
                 </button>
-              ))}
+              </div>
+            </div>
+
+            <div className="border-t border-white/20 pt-3 space-y-3">
+              <label className="flex items-center justify-between cursor-pointer">
+                <span className="text-white font-medium">🔊 Ses</span>
+                <input
+                  type="checkbox"
+                  checked={userData.settings.soundEnabled}
+                  onChange={(e) => onUpdateSettings({ soundEnabled: e.target.checked })}
+                  className="w-12 h-6 rounded-full appearance-none bg-white/30 checked:bg-green-500 relative cursor-pointer transition-colors
+                           before:content-[''] before:absolute before:w-5 before:h-5 before:rounded-full before:bg-white before:top-0.5 before:left-0.5
+                           before:transition-transform checked:before:translate-x-6"
+                />
+              </label>
+
+              <label className="flex items-center justify-between cursor-pointer">
+                <span className="text-white font-medium">📳 Titreşim</span>
+                <input
+                  type="checkbox"
+                  checked={userData.settings.hapticsEnabled}
+                  onChange={(e) => onUpdateSettings({ hapticsEnabled: e.target.checked })}
+                  className="w-12 h-6 rounded-full appearance-none bg-white/30 checked:bg-green-500 relative cursor-pointer transition-colors
+                           before:content-[''] before:absolute before:w-5 before:h-5 before:rounded-full before:bg-white before:top-0.5 before:left-0.5
+                           before:transition-transform checked:before:translate-x-6"
+                />
+              </label>
             </div>
           </div>
         )}
