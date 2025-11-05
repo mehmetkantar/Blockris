@@ -41,6 +41,7 @@ export interface GameState {
   combo: number;
   completedRounds: number; // Tamamlanan üçlü sayısı
   currentRoundHadClear: boolean; // Bu üçlüde hiç çizgi temizlendi mi
+  roundsSinceLastClear: number; // Son clear'dan beri kaç round geçti (grace period için)
   isGameOver: boolean;
   dragState: DragState;
   isMuted: boolean;
