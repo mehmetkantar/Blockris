@@ -1,6 +1,7 @@
 import { LeaderboardEntry } from '../types/user';
+import { firebaseLeaderboardManager } from './firebaseLeaderboard';
 
-// Mock leaderboard data (in production, this would be from a backend API)
+// Mock leaderboard data (fallback when offline)
 const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { rank: 1, username: 'TetrisKing', score: 15420, timestamp: new Date().toISOString() },
   { rank: 2, username: 'PuzzleMaster', score: 14850, timestamp: new Date().toISOString() },
@@ -16,9 +17,29 @@ const MOCK_LEADERBOARD: LeaderboardEntry[] = [
 
 class LeaderboardManager {
   private leaderboardData: LeaderboardEntry[] = [];
+  private useFirebase = true;
 
   constructor() {
     this.loadLeaderboard();
+    // Try to use Firebase, fallback to localStorage if offline
+    this.checkFirebaseConnection();
+  }
+
+  // Check if Firebase is available
+  private async checkFirebaseConnection(): Promise<void> {
+    try {
+      // Wait a bit for Firebase to initialize
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      this.useFirebase = firebaseLeaderboardManager.isFirebaseOnline();
+      if (this.useFirebase) {
+        console.log('✅ Firebase connected - using cloud leaderboard');
+      } else {
+        console.log('⚠️ Firebase offline - using local leaderboard');
+      }
+    } catch (error) {
+      console.error('Firebase connection check failed:', error);
+      this.useFirebase = false;
+    }
   }
 
   // Load leaderboard from localStorage (or mock data)
@@ -48,7 +69,21 @@ class LeaderboardManager {
   }
 
   // Get global leaderboard (top N entries)
-  getGlobalLeaderboard(limit: number = 100): LeaderboardEntry[] {
+  async getGlobalLeaderboard(limit: number = 100): Promise<LeaderboardEntry[]> {
+    if (this.useFirebase) {
+      try {
+        const firebaseLeaderboard = await firebaseLeaderboardManager.getGlobalLeaderboard(limit);
+        // Update local cache
+        this.leaderboardData = firebaseLeaderboard;
+        this.saveLeaderboard();
+        return firebaseLeaderboard;
+      } catch (error) {
+        console.error('Firebase error, falling back to localStorage:', error);
+        this.useFirebase = false;
+      }
+    }
+
+    // Fallback to localStorage
     return this.leaderboardData
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
@@ -56,8 +91,27 @@ class LeaderboardManager {
   }
 
   // Submit score to leaderboard
-  submitScore(username: string, score: number): { rank: number; isNewHighScore: boolean } {
-    // Find if user already has a score
+  async submitScore(username: string, score: number): Promise<{ rank: number; isNewHighScore: boolean }> {
+    // Always save to localStorage first (fallback)
+    const localResult = this.submitScoreLocal(username, score);
+
+    // Try Firebase
+    if (this.useFirebase) {
+      try {
+        const firebaseResult = await firebaseLeaderboardManager.submitScore(username, score);
+        return firebaseResult;
+      } catch (error) {
+        console.error('Firebase submit error, using local result:', error);
+        this.useFirebase = false;
+        return localResult;
+      }
+    }
+
+    return localResult;
+  }
+
+  // Submit score to localStorage (fallback)
+  private submitScoreLocal(username: string, score: number): { rank: number; isNewHighScore: boolean } {
     const existingIndex = this.leaderboardData.findIndex(
       entry => entry.username === username
     );
@@ -65,16 +119,14 @@ class LeaderboardManager {
     let isNewHighScore = false;
 
     if (existingIndex >= 0) {
-      // Update if new score is higher
       if (score > this.leaderboardData[existingIndex].score) {
         this.leaderboardData[existingIndex].score = score;
         this.leaderboardData[existingIndex].timestamp = new Date().toISOString();
         isNewHighScore = true;
       }
     } else {
-      // New entry
       this.leaderboardData.push({
-        rank: 0, // Will be recalculated
+        rank: 0,
         username,
         score,
         timestamp: new Date().toISOString(),
@@ -82,7 +134,6 @@ class LeaderboardManager {
       isNewHighScore = true;
     }
 
-    // Sort and update ranks
     this.leaderboardData.sort((a, b) => b.score - a.score);
     this.leaderboardData.forEach((entry, index) => {
       entry.rank = index + 1;
@@ -90,7 +141,6 @@ class LeaderboardManager {
 
     this.saveLeaderboard();
 
-    // Find user's rank
     const userEntry = this.leaderboardData.find(
       entry => entry.username === username
     );
@@ -102,7 +152,16 @@ class LeaderboardManager {
   }
 
   // Get user's rank
-  getUserRank(username: string): number {
+  async getUserRank(username: string): Promise<number> {
+    if (this.useFirebase) {
+      try {
+        return await firebaseLeaderboardManager.getUserRank(username);
+      } catch (error) {
+        console.error('Firebase error getting rank:', error);
+        this.useFirebase = false;
+      }
+    }
+
     const entry = this.leaderboardData.find(
       entry => entry.username === username
     );
