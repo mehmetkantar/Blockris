@@ -4,6 +4,56 @@ Modern blok yerleştirme oyunu - Tetris meets Sudoku!
 
 **Now available for Android and iOS!** 📱
 
+---
+
+## 📸 Ekran Görüntüleri / Screenshots
+
+### 🎬 Demo Video
+<p align="center">
+  <video src="images/blockris_demo.webm" width="300" autoplay loop muted>
+    Tarayıcınız video etiketini desteklemiyor.
+  </video>
+</p>
+
+> Oyun demo kaydı: Ana menü → Oyun ekranı → Lider tablosu → Dükkan akışı.
+
+### Ana Menü
+<p align="center">
+  <img src="images/demo_menu.png" alt="Blockris Ana Menü" width="300"/>
+</p>
+
+> Ana menü: Oyna, Lider Tablosu, Dükkan ve Ayarlar butonları ile coin bilgisi ve en yüksek skor gösterimi.
+
+### Oyun Ekranı
+<p align="center">
+  <img src="images/demo_gameplay.png" alt="Blockris Oyun Ekranı" width="300"/>
+</p>
+
+> 8x8 grid üzerinde blok yerleştirme oynanışı. Alt barda 3 farklı parça ve Döndür (Rotate Slot) alanı.
+
+### Lider Tablosu
+<p align="center">
+  <img src="images/demo_leaderboard.png" alt="Blockris Lider Tablosu" width="300"/>
+</p>
+
+> Online sıralama tablosu ile oyuncuların puanlarını karşılaştırma.
+
+### Dükkan
+<p align="center">
+  <img src="images/demo_shop.png" alt="Blockris Dükkan" width="300"/>
+</p>
+
+> Haftalık ve aylık coin paketleri ile in-app satın alma ekranı.
+
+### Mobil Görünüm
+<p align="center">
+  <img src="images/Mobile.png" alt="Blockris Mobil" width="250"/>
+</p>
+
+> iOS/Android native uygulama görünümü - tam responsive tasarım.
+
+---
+
 ## Oyun Kuralları
 
 ### Oyun Alanı
