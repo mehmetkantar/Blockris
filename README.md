@@ -9,13 +9,14 @@ Modern blok yerleştirme oyunu - Tetris meets Sudoku!
 ## 📸 Ekran Görüntüleri / Screenshots
 
 ### 🎬 Demo Video
+
 <p align="center">
-  <video src="images/blockris_demo.webm" width="300" autoplay loop muted>
-    Tarayıcınız video etiketini desteklemiyor.
-  </video>
+  <a href="images/blockris_demo.webm">
+    <img src="images/demo_menu.png" alt="Blockris Demo Video - Tıklayın" width="300"/>
+  </a>
 </p>
 
-> Oyun demo kaydı: Ana menü → Oyun ekranı → Lider tablosu → Dükkan akışı.
+> 🎥 **[Demo videosunu izlemek için tıklayın](images/blockris_demo.webm)** — Ana menü → Oyun ekranı → Lider tablosu → Dükkan akışı.
 
 ### Ana Menü
 <p align="center">
