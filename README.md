@@ -11,12 +11,10 @@ Modern blok yerleştirme oyunu - Tetris meets Sudoku!
 ### 🎬 Demo Video
 
 <p align="center">
-  <a href="images/blockris_demo.webm">
-    <img src="images/demo_menu.png" alt="Blockris Demo Video - Tıklayın" width="300"/>
-  </a>
+  <img src="images/blockris_demo.gif" alt="Blockris Demo" width="300"/>
 </p>
 
-> 🎥 **[Demo videosunu izlemek için tıklayın](images/blockris_demo.webm)** — Ana menü → Oyun ekranı → Lider tablosu → Dükkan akışı.
+> Ana menü → Oyun ekranı → Lider tablosu → Dükkan akışı.
 
 ### Ana Menü
 <p align="center">
